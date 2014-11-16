@@ -1,25 +1,37 @@
-## Practical Machine Learning Assignment
+# Practical Machine Learning Assignment
+##### *November, 2014*
 
 
--Describe how model was built (machine learning algorithm to predict activity quality from activity monitors)
--Describe how cross-validation was used
--Estimate out of sample error using cross-validation
--Why I made the choices I did
--R markdown file
--HTML file < 2,000 words; < 5 figures
--Send link to Github repo with a gh-pages branch
+#### Introduction
+This paper presents the development of a machine learning algorithm that predicts how well a subject performs certain exercises by looking at various metrics from a set of activity monitors.
 
 
 
-```{r}
+####  Data
+The data for this project comes from the study *Accelerometers' Data Classification of Body Postures and Movements*. According to the study's paper, "Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E)." The data is housed at this [web portal](http://groupware.les.inf.puc-rio.br/har; 2014-11-14).
+
+
+
+#### Tools
+The model was built in [R](http://www.r-project.org/)/[R Studio](http://www.rstudio.com/) by using functions from the *caret* and *randomForest* [CRAN](http://cran.r-project.org/) packages.
+
+
+
+#### Model Build
+Both the train/test splitting function and the random forest algorithm use random numbers as input. To ensure reproducibility of this code's output, the random seed is set. The two libraries are then called.
+*Note:  each of these packages must be installed prior to running this code.*
+
+```{r Prepare}
+set.seed(4444)
 library(caret)
 library(randomForest)
 ```
 
 
-Data source:  http://groupware.les.inf.puc-rio.br/har; 2014-11-14
 
-```{r}
+The two datasets are then downloaded from the web portal and saved to a local drive. Once there, the two datasets are then read into the R environment as objects.
+
+```{r ETL}
 trainingURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
 testingURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
 
@@ -32,7 +44,10 @@ testing <- read.csv(file="pml-testing.csv",header=TRUE,stringsAsFactors=FALSE)
 
 
 
-```{r}
+The quality of each exercise in the training dataset is recorded as a letter from A to E. The load process did not have instructions that these represent classifications, so this attribute is converted to an unordered factor. Many of the quantitative attributes are sparsely populated and/or represent derived/summarized fields from other attributes. To overcome these issues, the less essential attributes are filtered out for modeling purposes. The remaining quantitative attributes are then converted to the numeric datatype for consistency.
+
+
+```{r Clean}
 training$classe <- as.factor(training$classe)
 
 atts <- c(7:11,37:49,60:68,84:86,113:124,140,151:159)
@@ -45,33 +60,61 @@ for(i in atts){
 
 
 
-```{r}
+
+Even though training and testing datasets are given, it can be useful to split the former into its own train/test sets since the latter has only twenty few observations. This further splitting at a 70/30 ratio.
+
+```{r Split}
 inTrain <- createDataPartition(y=training$classe,p=0.7,list=FALSE)
 train <- training[inTrain,]
 test <- training[-inTrain,]
 ```
 
 
-don't actually run the model since it takes too long:
 
-```{r eval=FALSE}
+
+Now that each of the sub-datasets are in good order, the model can be selected and executed. Several classification models were considered for this project. Since there are many attributes that are quite technical in their meaning, the thought is that trying to get a good mode that is transparent and easy to understand would be likely impossible. With those aspects no longer needed, a model with a high likelihood of accuracy is an ensemble method known as "random forest." This model often is used in successful [Kaggle](https://www.kaggle.com/) competitions and is well-supported in R.
+*Note:  the model takes approximately one hour to run on a standard laptop, so the finished model is loaded in this markdown file.*
+
+```{r Train,cache=TRUE}
 modFit <- train(classe~.,method="rf",data=train[,c(atts,160)])
 ```
 
 
-rest of the code:
 
-```{r}
+When executing random forest modeling, R automatically includes a cross-validation step with 25 reps bootstrapping. Forest #27 was selected and includes 500 trees. The train set shows 99.5% accuracy. The out of bag estimated error rate is 0.25%, which preliminarily suggests the model is not over-fitting. These are good levels of accuracy, but the model needs to be tried on the test subset to get better evidence on the question of over-fitting.
+
+```{r Results}
 modFit
 modFit$finalModel
+```
+
+
+
+
+The model was applied to the test subset. The resulting accuracy level was extremely high at 99.8%, with a 95% confidence interval range of 99.67% to 99.91%. This is strong evidence that the model will be highly predictive on unseen datasets.
+
+```{r Confusion Matrix}
 testConf <- table(test$classe,predict(modFit,test))
-sum(diag(testConf)) / sum(testConf)
+confusionMatrix(testConf)
 ```
 
 
-Plot(s):
 
-```{r, echo=FALSE}
+The accuracy rate is so high that a confusion matrix expressed as a heatmap appears to be perfect.
 
+```{r Heatmap,echo=FALSE}
+z <- as.matrix(testConf)
+heatmap(t(z)[ncol(z):1,],Rowv=NA,Colv=NA,col=heat.colors(256))
 ```
 
+
+
+### Conclusion
+In summary, the datasets provided contained so many available attributes and so many observations that obtaining a successful model was nearly inevitable. The hurdle rate for accuracy was about 28% because one could naively predict class A (exercise done correctly) and be correct about 28% of the time. Thus, this model should be considered highly predictive and useful for this application or similar ones.
+
+
+
+#### References:
+*1 Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6. 
+
+2 http://groupware.les.inf.puc-rio.br/har#ixzz3JFOHOQyg*
