@@ -103,7 +103,7 @@ for(i in atts){
 <pre class="r"><code>inTrain &lt;- createDataPartition(y=training$classe,p=0.7,list=FALSE)
 train &lt;- training[inTrain,]
 test &lt;- training[-inTrain,]</code></pre>
-<p>Now that each of the sub-datasets are in good order, the model can be selected and executed. Several classification models were considered for this project. Since there are many attributes that are quite technical in their meaning, the thought is that trying to get a good mode that is transparent and easy to understand would be likely impossible. With those aspects no longer needed, a model with a high likelihood of accuracy is an ensemble method known as “random forest.” This model often is used in successful <a href="https://www.kaggle.com/">Kaggle</a> competitions and is well-supported in R. <em>Note: the model takes approximately one hour to run on a standard laptop, so the finished model is loaded in this markdown file.</em></p>
+<p>Now that each of the sub-datasets are in good order, the model can be selected and executed. Several classification models were considered for this project. Since there are many attributes that are quite technical in their meaning, the thought is that trying to get a good model that is transparent and easy to understand would be likely impossible. With those aspects no longer needed, a model with a high likelihood of accuracy is an ensemble method known as “random forest.” This model often is used in successful <a href="https://www.kaggle.com/">Kaggle</a> competitions and is well-supported in R. <em>Note: the model takes approximately one hour to run on a standard laptop, so the finished model is loaded in this markdown file.</em></p>
 <pre class="r"><code>if(file.exists(&quot;rfModel.Rda&quot;)){
   load(&quot;rfModel.Rda&quot;)} else {
     modFit &lt;- train(classe~.,method=&quot;rf&quot;,data=train[,c(atts,160)])
@@ -189,7 +189,7 @@ confusionMatrix(testConf)</code></pre>
 <div id="references" class="section level5">
 <h5>References:</h5>
 <p>*1 Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers’ Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6.</p>
-<p>2 <a href="http://groupware.les.inf.puc-rio.br/har#ixzz3JFOHOQyg">http://groupware.les.inf.puc-rio.br/har#ixzz3JFOHOQyg</a>*</p>
+<p>2 <a href="http://groupware.les.inf.puc-rio.br/har#ixzz3JFOHOQyg">http://groupware.les.inf.puc-rio.br/har#ixzz3JFOHOQyg</a>* Extracted November 14, 2014</p>
 </div>
 </div>
 </div>
