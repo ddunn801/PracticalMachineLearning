@@ -76,7 +76,7 @@ test <- training[-inTrain,]
 Now that each of the sub-datasets are in good order, the model can be selected and executed. Several classification models were considered for this project. Since there are many attributes that are quite technical in their meaning, the thought is that trying to get a good mode that is transparent and easy to understand would be likely impossible. With those aspects no longer needed, a model with a high likelihood of accuracy is an ensemble method known as "random forest." This model often is used in successful [Kaggle](https://www.kaggle.com/) competitions and is well-supported in R.
 *Note:  the model takes approximately one hour to run on a standard laptop, so the finished model is loaded in this markdown file.*
 
-```{r Train,cache=TRUE,eval=FALSE}
+```{r Train,cache=TRUE}
 modFit <- train(classe~.,method="rf",data=train[,c(atts,160)])
 ```
 
